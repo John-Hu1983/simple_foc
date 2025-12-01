@@ -58,7 +58,12 @@
 			"queue": "cpp",
 			"stdexcept": "cpp",
 			"cinttypes": "cpp",
-			"cstdbool": "cpp"
+			"cstdbool": "cpp",
+			"bit": "cpp",
+			"compare": "cpp",
+			"concepts": "cpp",
+			"ratio": "cpp",
+			"numbers": "cpp"
 		}
 	}
 }
