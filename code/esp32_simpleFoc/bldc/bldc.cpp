@@ -3,32 +3,32 @@
 #include "bldc.h"
 #include "../bsp/bsp_beacon.h"
 
-// 电机1的硬件配置
-const bldc_property_t BLDC_M1_Feature = {
-    .phase_u = 6,                                       // U相引脚
-    .phase_v = 7,                                       // V相引脚
-    .phase_w = 18,                                      // W相引脚
-    .pwm_u = {.cn = 0, .freq = 20000, .resolution = 8}, // PWM通道0配置：频率20kHz，分辨率8位
-    .pwm_v = {.cn = 1, .freq = 20000, .resolution = 8}, // PWM通道1配置：频率20kHz，分辨率8位
-    .pwm_w = {.cn = 2, .freq = 20000, .resolution = 8}, // PWM通道2配置：频率20kHz，分辨率8位
-    .polaritys = 7,                                     // 电机极对数
-    .power_vol = 12.6,                                  // 电源电压
-};
+// // 电机1的硬件配置
+// const bldc_property_t BLDC_M1_Feature = {
+//     .phase_u = 6,                                       // U相引脚
+//     .phase_v = 7,                                       // V相引脚
+//     .phase_w = 18,                                      // W相引脚
+//     .pwm_u = {.cn = 0, .freq = 20000, .resolution = 8}, // PWM通道0配置：频率20kHz，分辨率8位
+//     .pwm_v = {.cn = 1, .freq = 20000, .resolution = 8}, // PWM通道1配置：频率20kHz，分辨率8位
+//     .pwm_w = {.cn = 2, .freq = 20000, .resolution = 8}, // PWM通道2配置：频率20kHz，分辨率8位
+//     .polaritys = 7,                                     // 电机极对数
+//     .power_vol = 11.6,                                  // 电源电压
+// };
 
 // 电机2的硬件配置
 const bldc_property_t BLDC_M2_Feature = {
-    .phase_u = 19,                                      // U相引脚
-    .phase_v = 20,                                      // V相引脚
+    .phase_u = 20,                                      // U相引脚
+    .phase_v = 19,                                      // V相引脚
     .phase_w = 21,                                      // W相引脚
     .pwm_u = {.cn = 3, .freq = 20000, .resolution = 8}, // PWM通道3配置：频率20kHz，分辨率8位
     .pwm_v = {.cn = 4, .freq = 20000, .resolution = 8}, // PWM通道4配置：频率20kHz，分辨率8位
     .pwm_w = {.cn = 5, .freq = 20000, .resolution = 8}, // PWM通道5配置：频率20kHz，分辨率8位
     .polaritys = 7,                                     // 电机极对数
-    .power_vol = 12.6,                                  // 电源电压
+    .power_vol = 11.6,                                  // 电源电压
 };
 
 // FOC算法参数结构体实例
-bldc_foc_algorithm_t M1_FOC, M2_FOC;
+bldc_foc_algorithm_t M2_FOC;
 
 // 初始变量及函数定义
 #define _constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
@@ -39,18 +39,23 @@ bldc_foc_algorithm_t M1_FOC, M2_FOC;
  */
 void init_bldc_parameter(void)
 {
-  // 配置电机1的GPIO引脚和PWM
-  pinMode(BLDC_M1_Feature.phase_u, OUTPUT);
-  pinMode(BLDC_M1_Feature.phase_v, OUTPUT);
-  pinMode(BLDC_M1_Feature.phase_w, OUTPUT);
-  ledcSetup(BLDC_M1_Feature.pwm_u.cn, BLDC_M1_Feature.pwm_u.freq, BLDC_M1_Feature.pwm_u.resolution);
-  ledcSetup(BLDC_M1_Feature.pwm_v.cn, BLDC_M1_Feature.pwm_v.freq, BLDC_M1_Feature.pwm_v.resolution);
-  ledcSetup(BLDC_M1_Feature.pwm_w.cn, BLDC_M1_Feature.pwm_w.freq, BLDC_M1_Feature.pwm_w.resolution);
-  ledcAttachPin(BLDC_M1_Feature.phase_u, BLDC_M1_Feature.pwm_u.cn);
-  ledcAttachPin(BLDC_M1_Feature.phase_v, BLDC_M1_Feature.pwm_v.cn);
-  ledcAttachPin(BLDC_M1_Feature.phase_w, BLDC_M1_Feature.pwm_w.cn);
-  memset(&M1_FOC, 0, sizeof(bldc_foc_algorithm_t));
-  M1_FOC.open_loop_timestamp = micros(); // 初始化时间戳
+  // 配置GPIO47为输出并设置为高电平，用于控制MS8313的使能引脚
+  pinMode(47, OUTPUT);
+  digitalWrite(47, HIGH);
+  
+  // // 配置电机1的GPIO引脚和PWM
+  // pinMode(BLDC_M1_Feature.phase_u, OUTPUT);
+  // pinMode(BLDC_M1_Feature.phase_v, OUTPUT);
+  // pinMode(BLDC_M1_Feature.phase_w, OUTPUT);
+  // ledcSetup(BLDC_M1_Feature.pwm_u.cn, BLDC_M1_Feature.pwm_u.freq, BLDC_M1_Feature.pwm_u.resolution);
+  // ledcSetup(BLDC_M1_Feature.pwm_v.cn, BLDC_M1_Feature.pwm_v.freq, BLDC_M1_Feature.pwm_v.resolution);
+  // ledcSetup(BLDC_M1_Feature.pwm_w.cn, BLDC_M1_Feature.pwm_w.freq, BLDC_M1_Feature.pwm_w.resolution);
+  // ledcAttachPin(BLDC_M1_Feature.phase_u, BLDC_M1_Feature.pwm_u.cn);
+  // ledcAttachPin(BLDC_M1_Feature.phase_v, BLDC_M1_Feature.pwm_v.cn);
+  // ledcAttachPin(BLDC_M1_Feature.phase_w, BLDC_M1_Feature.pwm_w.cn);
+  // memset(&M1_FOC, 0, sizeof(bldc_foc_algorithm_t));
+  // M1_FOC.zero_electric_angle = 0.0;
+  // M1_FOC.open_loop_timestamp = micros(); // 初始化时间戳
 
   // 配置电机2的GPIO引脚和PWM
   pinMode(BLDC_M2_Feature.phase_u, OUTPUT);
@@ -63,6 +68,7 @@ void init_bldc_parameter(void)
   ledcAttachPin(BLDC_M2_Feature.phase_v, BLDC_M2_Feature.pwm_v.cn);
   ledcAttachPin(BLDC_M2_Feature.phase_w, BLDC_M2_Feature.pwm_w.cn);
   memset(&M2_FOC, 0, sizeof(bldc_foc_algorithm_t));
+  M2_FOC.zero_electric_angle = 0.0;
   M2_FOC.open_loop_timestamp = micros(); // 初始化时间戳
 }
 
@@ -181,7 +187,12 @@ float execute_velocity_service(bldc_property_t *feature, bldc_foc_algorithm_t *f
   如果轴角度为 π/3，则电角度为 π/3 * 3 = π。
   这样，电角度就可以用于确定电机在不同位置上的电压输出。
   */
-  float Uq = feature->power_vol / 3; // 设置q轴电压为电源电压的1/3
+  // 修改前
+  // float Uq = feature->power_vol / 3; // 设置q轴电压为电源电压的1/3
+  
+  // 修改后 - 增加启动电压（可以尝试增加到电源电压的2/3）
+  float Uq = feature->power_vol * 2 / 3; // 增加电压以提供更大扭矩
+  
   set_phase_voltage(feature, foc, Uq, 0, _electricalAngle(foc->shaft_angle, feature->polaritys));
 
   /*
@@ -200,7 +211,7 @@ float execute_velocity_service(bldc_property_t *feature, bldc_foc_algorithm_t *f
 void proceed_bldc_service(void)
 {
   // 控制电机1以10rad/s的速度运行
-  execute_velocity_service((bldc_property_t *)&BLDC_M1_Feature, &M1_FOC, 10.0f);
+  // execute_velocity_service((bldc_property_t *)&BLDC_M1_Feature, &M1_FOC, 210.0f);
   // 控制电机2以10rad/s的速度运行
-  execute_velocity_service((bldc_property_t *)&BLDC_M2_Feature, &M2_FOC, 10.0f);
+  execute_velocity_service((bldc_property_t *)&BLDC_M2_Feature, &M2_FOC, 210.0f);
 }
